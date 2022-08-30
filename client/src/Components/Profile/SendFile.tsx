@@ -3,7 +3,7 @@ import SendFile from "../../artifacts/contracts/SendFile.sol/SendFile.json";
 import BuyGb from "../../artifacts/contracts/BuyGb.sol/BuyGb.json";
 import axios from "axios";
 import { ethers } from "ethers";
-import { Buffer } from "buffer";
+import buffer, { Buffer } from "buffer";
 import { Web3Storage, File } from "web3.storage";
 import { Button } from "react-bootstrap";
 import { create, CID, IPFSHTTPClient } from "ipfs-http-client";
@@ -98,11 +98,14 @@ export class SendFiles extends React.Component<{}, State> {
     const myFiles = this.state.myFile;
     console.log(myFiles.length);
 
-    for (let i = 0; i < myFiles.length; i++) {
-      if (typeof window.ethereum !== "undefined") {
+    if (typeof window.ethereum !== "undefined") {
+      let myArray: any[] = [];
+
+      const formData = new FormData();
+      for (let i = 0; i < myFiles.length; i++) {
         const element = myFiles[i];
-        const formData = new FormData();
-        formData.append(`myFile`, element);
+        formData.append("myFile", element);
+        myArray.push(formData);
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -176,52 +179,43 @@ export class SendFiles extends React.Component<{}, State> {
         } else {
           console.log("normall pass");
         }
-        try {
-          formData.append("userName", "yurikaza");
-          formData.append(
-            "key",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6Inl1cmlrYXphIiwiaWQiOjcyNjIxMTAzLCJub2RlX2lkIjoiTURRNlZYTmxjamN5TmpJeE1UQXoiLCJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9hdmF0YXJzLmdpdGh1YnVzZXJjb250ZW50LmNvbS91LzcyNjIxMTAzP3Y9NCIsImdyYXZhdGFyX2lkIjoiIiwidXJsIjoiaHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS91c2Vycy95dXJpa2F6YSIsImh0bWxfdXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL3l1cmlrYXphIiwiZm9sbG93ZXJzX3VybCI6Imh0dHBzOi8vYXBpLmdpdGh1Yi5jb20vdXNlcnMveXVyaWthemEvZm9sbG93ZXJzIiwiZm9sbG93aW5nX3VybCI6Imh0dHBzOi8vYXBpLmdpdGh1Yi5jb20vdXNlcnMveXVyaWthemEvZm9sbG93aW5ney9vdGhlcl91c2VyfSIsImdpc3RzX3VybCI6Imh0dHBzOi8vYXBpLmdpdGh1Yi5jb20vdXNlcnMveXVyaWthemEvZ2lzdHN7L2dpc3RfaWR9Iiwic3RhcnJlZF91cmwiOiJodHRwczovL2FwaS5naXRodWIuY29tL3VzZXJzL3l1cmlrYXphL3N0YXJyZWR7L293bmVyfXsvcmVwb30iLCJzdWJzY3JpcHRpb25zX3VybCI6Imh0dHBzOi8vYXBpLmdpdGh1Yi5jb20vdXNlcnMveXVyaWthemEvc3Vic2NyaXB0aW9ucyIsIm9yZ2FuaXphdGlvbnNfdXJsIjoiaHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS91c2Vycy95dXJpa2F6YS9vcmdzIiwicmVwb3NfdXJsIjoiaHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS91c2Vycy95dXJpa2F6YS9yZXBvcyIsImV2ZW50c191cmwiOiJodHRwczovL2FwaS5naXRodWIuY29tL3VzZXJzL3l1cmlrYXphL2V2ZW50c3svcHJpdmFjeX0iLCJyZWNlaXZlZF9ldmVudHNfdXJsIjoiaHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS91c2Vycy95dXJpa2F6YS9yZWNlaXZlZF9ldmVudHMiLCJ0eXBlIjoiVXNlciIsInNpdGVfYWRtaW4iOmZhbHNlLCJuYW1lIjoiWXVzdWYgTWlyemEgUMSxw6dha2PEsSIsImNvbXBhbnkiOiJDaGFpbiBTdG9yYWdlIiwiYmxvZyI6Imh0dHBzOi8veXVzdWZwaWNha2NpLmNvbS8iLCJsb2NhdGlvbiI6IlNhbXN1biwgVHVya2V5IiwiZW1haWwiOm51bGwsImhpcmVhYmxlIjpudWxsLCJiaW8iOiJKdW5pb3IgQmFjay1lbmQgRW5naW5lZXIiLCJ0d2l0dGVyX3VzZXJuYW1lIjoiWVBpY2FrY2kiLCJwdWJsaWNfcmVwb3MiOjIyLCJwdWJsaWNfZ2lzdHMiOjAsImZvbGxvd2VycyI6MSwiZm9sbG93aW5nIjoyLCJjcmVhdGVkX2F0IjoiMjAyMC0xMC0wOVQxNjoyMTowN1oiLCJ1cGRhdGVkX2F0IjoiMjAyMi0wNy0xNFQxODowNjo1NVoiLCJpYXQiOjE2NTk5NDY4MzR9.o-qGZ6cR9SjehrQUDNmnhBqFHT0onA15J9yxoZyYR7g"
-          );
+      }
+      try {
+        axios
+          .post("http://localhost:4000/api/", formData)
+          .then(async (data: any) => {
+            const filesData = data.data.data;
+            console.log(filesData);
+            for (let index = 0; index < filesData.length; index++) {
+              const element = filesData[index];
 
-          if (myFiles.length > 1) {
-            axios
-              .post("http://localhost:4000/api/sendMultipleFile", formData)
-              .then(async (data) => {
-                console.log(data.data.data.filesArray[i]);
-                const datas = await contract.createFiles(
-                  element.name,
-                  data.data.data.filesArray[i].link,
-                  data.data.data.filesArray[i].fileSize
-                );
+              const provider = new ethers.providers.Web3Provider(
+                window.ethereum
+              );
+              const signer = provider.getSigner();
+              const contract = new ethers.Contract(
+                "0xd8EB6F8C4882Af90FEC4EBA485df8d66Be0DE970" ||
+                  `${process.env.CREATE_FILE_KEY}`,
+                SendFile.abi,
+                signer
+              );
 
-                await datas.wait();
+              const contractData = await contract.createFiles(
+                element.name,
+                element.link,
+                element.size
+              );
 
-                console.log("data: ", datas);
-              });
-          } else {
-            axios
-              .post("http://localhost:4000/api/sendSingleFile", formData)
-              .then(async (data) => {
-                console.log(data.data.data.filesArray[i]);
-                const datas = await contract.createFiles(
-                  element.name,
-                  data.data.data.filesArray[i].link,
-                  data.data.data.filesArray[i].fileSize
-                );
+              await contractData.wait();
+              console.log("data: ", contractData);
+            }
+          });
 
-                await datas.wait();
-
-                console.log("data: ", datas);
-              });
-          }
-
-          console.log(window.ethereum.selectedAddress);
-        } catch (err: unknown) {
-          console.log("Error: ", err);
-        }
+        console.log(window.ethereum.selectedAddress);
+      } catch (err: unknown) {
+        console.log("Error: ", err);
       }
     }
-
     this.setState({ _FileName: "", _FileLink: "", _FileSize: "" });
     this.setState({ loadingFile: "" });
   }
