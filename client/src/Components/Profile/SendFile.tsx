@@ -224,6 +224,7 @@ export class SendFiles extends React.Component<{}, State> {
               type="file"
               onChange={(e: any) => this.fileChangedHandler(e)}
               className="form-control mb-4"
+              multiple
             />
           </div>
           <div className="form-group">

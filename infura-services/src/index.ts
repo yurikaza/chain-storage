@@ -37,7 +37,7 @@ app.post("/api/", async (req: Request, res: Response) => {
       "Basic " +
       Buffer.from(projectId + ":" + projectSecret).toString("base64");
 
-    const ipfs = create({
+    const ipfs = await create({
       host: "ipfs.infura.io",
       port: 5001,
       protocol: "https",
@@ -47,7 +47,7 @@ app.post("/api/", async (req: Request, res: Response) => {
     });
 
     const file = await ipfs.add(fileData.name, fileData.data);
-    const newFile = `https://ipfs.io/ipfs/${file.cid}?filename=${fileData.name}`;
+    const newFile = `https://ipfs.io/ipfs/${file.cid}`;
 
     let myObj: any = {
       link: newFile,
@@ -59,6 +59,7 @@ app.post("/api/", async (req: Request, res: Response) => {
   } else if (fileData.length >= 2) {
     for (let index = 0; index < fileData.length; index++) {
       const element = fileData[index];
+      console.log(element);
 
       const projectId =
         "2DAOlno5zO07ea3deWjDmmEuA4i" || `${process.env.PROJECT_ID}`;
@@ -68,7 +69,7 @@ app.post("/api/", async (req: Request, res: Response) => {
         "Basic " +
         Buffer.from(projectId + ":" + projectSecret).toString("base64");
 
-      const ipfs = create({
+      const ipfs = await create({
         host: "ipfs.infura.io",
         port: 5001,
         protocol: "https",
@@ -77,8 +78,8 @@ app.post("/api/", async (req: Request, res: Response) => {
         },
       });
 
-      const file = await ipfs.add(element.name, element.data);
-      const newFile = `https://ipfs.io/ipfs/${file.cid}?filename=${element.name}`;
+      const file = await ipfs.add(element.data);
+      const newFile = `https://ipfs.io/ipfs/${file.cid}`;
 
       let myObj: any = {
         link: newFile,
