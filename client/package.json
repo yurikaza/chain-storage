@@ -21,7 +21,7 @@
     "buffer": "^6.0.3",
     "ethers": "^5.5.4",
     "express": "^4.17.2",
-    "ipfs-http-client": "^57.0.3",
+    "ipfs-http-client": "56.0.3",
     "parse-link-header": "^2.0.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.2",

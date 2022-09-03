@@ -3,22 +3,14 @@ import SendFile from "../../artifacts/contracts/SendFile.sol/SendFile.json";
 import BuyGb from "../../artifacts/contracts/BuyGb.sol/BuyGb.json";
 import axios from "axios";
 import { ethers } from "ethers";
-import buffer, { Buffer } from "buffer";
-import { Web3Storage, File } from "web3.storage";
 import { Button } from "react-bootstrap";
-import { create, CID, IPFSHTTPClient } from "ipfs-http-client";
+import { sendSingleFile } from "./sendSingleFile";
 
 declare let window: any;
 
 interface State {
-  _FileName: string;
-  _FileLink: string;
-  _FileSize: string | number;
-  UserFiles: any[];
   CurrenRole: any[] | any;
-  LastUploads: any[] | any;
   myFile: any;
-  totalStorage: any;
   totalFileSize: any;
   loadingFile: string | any | any[];
 }
@@ -34,21 +26,11 @@ export class SendFiles extends React.Component<{}, State> {
     this.GetUserRole = this.GetUserRole.bind(this);
 
     this.state = {
-      _FileName: "",
-      _FileLink: "",
-      _FileSize: "",
-      UserFiles: [],
       CurrenRole: [],
-      LastUploads: [],
       myFile: null,
       loadingFile: "",
-      totalStorage: "",
       totalFileSize: "",
     };
-  }
-
-  public fileChangedHandler(e: any) {
-    this.setState({ myFile: e.target.files });
   }
 
   async GetUserRole() {
@@ -86,10 +68,13 @@ export class SendFiles extends React.Component<{}, State> {
       }
     }
   }
-
   async componentDidMount() {
     console.log(window.ethereum.selectedAddress);
     this.setState({ loadingFile: "" });
+  }
+
+  public fileChangedHandler(e: any) {
+    this.setState({ myFile: e.target.files });
   }
 
   async createFiles(e: any) {
@@ -106,6 +91,7 @@ export class SendFiles extends React.Component<{}, State> {
         const element = myFiles[i];
         formData.append("myFile", element);
         myArray.push(formData);
+        console.log(formData, element);
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -180,6 +166,7 @@ export class SendFiles extends React.Component<{}, State> {
           console.log("normall pass");
         }
       }
+
       try {
         axios
           .post("http://localhost:4000/api/", formData)
@@ -187,7 +174,7 @@ export class SendFiles extends React.Component<{}, State> {
             const filesData = data.data.data;
             console.log(filesData);
             for (let index = 0; index < filesData.length; index++) {
-              const element = filesData[index];
+              const fileElement = filesData[index];
 
               const provider = new ethers.providers.Web3Provider(
                 window.ethereum
@@ -201,9 +188,9 @@ export class SendFiles extends React.Component<{}, State> {
               );
 
               const contractData = await contract.createFiles(
-                element.name,
-                element.link,
-                element.size
+                fileElement.name,
+                fileElement.link,
+                fileElement.size
               );
 
               await contractData.wait();
@@ -216,7 +203,7 @@ export class SendFiles extends React.Component<{}, State> {
         console.log("Error: ", err);
       }
     }
-    this.setState({ _FileName: "", _FileLink: "", _FileSize: "" });
+
     this.setState({ loadingFile: "" });
   }
 
@@ -235,9 +222,8 @@ export class SendFiles extends React.Component<{}, State> {
             <label>Files</label>
             <input
               type="file"
-              onChange={(e) => this.fileChangedHandler(e)}
+              onChange={(e: any) => this.fileChangedHandler(e)}
               className="form-control mb-4"
-              multiple
             />
           </div>
           <div className="form-group">
