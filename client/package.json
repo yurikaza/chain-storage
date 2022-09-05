@@ -36,7 +36,6 @@
     "web3.storage": "^3.5.4"
   },
   "scripts": {
-    "start": "node server.js",
     "start:React": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
