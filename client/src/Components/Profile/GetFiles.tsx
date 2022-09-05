@@ -2,7 +2,7 @@ import React, { ComponentLifecycle } from "react";
 import SendFile from "../../artifacts/contracts/SendFile.sol/SendFile.json";
 import BuyGb from "../../artifacts/contracts/BuyGb.sol/BuyGb.json";
 import { ethers } from "ethers";
-import { Table, Card, Button, Row, Spinner} from "react-bootstrap";
+import { Table, Card, Button, Row, Spinner } from "react-bootstrap";
 import { Web3Storage, File } from "web3.storage";
 import { Link } from "react-router-dom";
 import { SendFiles } from "./SendFile";
@@ -14,9 +14,12 @@ import {
   MdPictureAsPdf,
   MdVideocam,
   MdMusicVideo,
-  MdOutlineFilePresent
+  MdOutlineFilePresent,
+  MdOutlineDownload,
 } from "react-icons/md";
 import "../Profile/GetFiles.css";
+import axios from "axios";
+import fileDownload from "js-file-download";
 // import { Link } from "react-router-dom";
 
 declare let window: any;
@@ -50,6 +53,7 @@ export class GetFiles extends React.Component<{}, State> {
     this.UpgradeLink = this.UpgradeLink.bind(this);
     this.main = this.main.bind(this);
     this.GetUserRole = this.GetUserRole.bind(this);
+    this.downloadFiles = this.downloadFiles.bind(this);
 
     this.state = {
       _FileName: "",
@@ -65,7 +69,7 @@ export class GetFiles extends React.Component<{}, State> {
       loading: false,
       loadingFile: "",
     };
-  } 
+  }
 
   public fileChangedHandler(e: any) {
     this.setState({ myFile: e.target.files[0] });
@@ -82,7 +86,7 @@ export class GetFiles extends React.Component<{}, State> {
       try {
         let noting;
         const data = await contract.currentRole();
-        console.log(data)
+        console.log(data);
         let dataArray: any[] = [];
 
         for (let index = 0; index < data.length; index++) {
@@ -90,13 +94,13 @@ export class GetFiles extends React.Component<{}, State> {
 
           if (
             element.userAddress.toLowerCase() ===
-            window.ethereum.selectedAddress 
+            window.ethereum.selectedAddress
           ) {
             console.log("File Added");
             dataArray.push(element);
           }
         }
-        const arr = dataArray.slice(-1).pop()
+        const arr = dataArray.slice(-1).pop();
 
         this.setState({ CurrenRole: arr });
         const userRole = this.state.CurrenRole;
@@ -108,7 +112,7 @@ export class GetFiles extends React.Component<{}, State> {
   }
 
   async main() {
-    if(typeof window.ethereum !== "undefined") {
+    if (typeof window.ethereum !== "undefined") {
       this.GetUserRole();
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(
@@ -118,7 +122,7 @@ export class GetFiles extends React.Component<{}, State> {
         provider
       );
       console.log(contract);
-     try {
+      try {
         const data = await contract.getFiles();
         const dataArray: any[] = [];
         for (let index = 0; index < data.length; index++) {
@@ -129,38 +133,55 @@ export class GetFiles extends React.Component<{}, State> {
             window.ethereum.selectedAddress
           ) {
             const setFileFormats = (fileType: string) => {
-               const varName = element.fileName.endsWith(fileType);
-               return varName;
-            }
+              const varName = element.fileName.endsWith(fileType);
+              return varName;
+            };
 
             let fileImage;
-            if(setFileFormats("png" || "svg" || "jpeg" || "jpg" || "tiff" || "tif") === true) {
-              fileImage = <MdOutlineImage />
-            } else if(setFileFormats("pdf") === true) {
-              fileImage = <MdPictureAsPdf />
-            } else if(setFileFormats("mp.4") === true) {
-              fileImage = <MdVideocam /> 
-            } else if(setFileFormats("mp.3" || "waw") === true) {
-              fileImage = <MdMusicVideo />
-            } else if(setFileFormats("html" || "ts" || "js" || "py" || "c" || "java" || "grapql" || "tsx" || "sol" || "jsx" || "json") === true) {
-              fileImage = <MdOutlineCode />
+            if (
+              setFileFormats(
+                "png" || "svg" || "jpeg" || "jpg" || "tiff" || "tif"
+              ) === true
+            ) {
+              fileImage = <MdOutlineImage />;
+            } else if (setFileFormats("pdf") === true) {
+              fileImage = <MdPictureAsPdf />;
+            } else if (setFileFormats("mp.4") === true) {
+              fileImage = <MdVideocam />;
+            } else if (setFileFormats("mp.3" || "waw") === true) {
+              fileImage = <MdMusicVideo />;
+            } else if (
+              setFileFormats(
+                "html" ||
+                  "ts" ||
+                  "js" ||
+                  "py" ||
+                  "c" ||
+                  "java" ||
+                  "grapql" ||
+                  "tsx" ||
+                  "sol" ||
+                  "jsx" ||
+                  "json"
+              ) === true
+            ) {
+              fileImage = <MdOutlineCode />;
             } else {
-              fileImage = <MdOutlineFilePresent />
+              fileImage = <MdOutlineFilePresent />;
             }
-            const fileImageArray = [fileImage]
-            const contactElement = fileImageArray.concat(element)
-            console.log(fileImage)
+            const fileImageArray = [fileImage];
+            const contactElement = fileImageArray.concat(element);
+            console.log(fileImage);
             dataArray.push(contactElement);
           }
         }
-
 
         dataArray.reverse();
         this.setState({ UserFiles: dataArray });
         const lastFourUploads = this.state.UserFiles.slice(0, 4);
         const sliceUploads = lastFourUploads;
         //this.setState({ totalStorage: dataArray });
-        this.setState({ LastUploads: sliceUploads })
+        this.setState({ LastUploads: sliceUploads });
         console.log(this.state.UserFiles);
         console.log(this.state.LastUploads);
 
@@ -182,13 +203,13 @@ export class GetFiles extends React.Component<{}, State> {
 
         const totalFileSize: any = calc(sizeArray);
 
-        const sliceSize = totalFileSize.toString()
-        const slie = sliceSize.slice(0, 5)
+        const sliceSize = totalFileSize.toString();
+        const slie = sliceSize.slice(0, 5);
 
         this.setState({ totalFileSize: slie });
-       
+
         console.log(this.state.totalFileSize);
-        this.setState({ loading: true })
+        this.setState({ loading: true });
       } catch (err: unknown) {
         console.log("Error: ", err);
       }
@@ -196,8 +217,8 @@ export class GetFiles extends React.Component<{}, State> {
   }
 
   async componentDidMount() {
-      this.main();
-  } 
+    this.main();
+  }
 
   async DeleteFiles(fileCount: any) {
     if (typeof window.ethereum !== "undefined") {
@@ -213,106 +234,139 @@ export class GetFiles extends React.Component<{}, State> {
       const data = await contract.deleteFile(
         window.ethereum.selectedAddress,
         fileCount
-      )
-      console.log(data)
+      );
+      console.log(data);
     }
   }
 
-  async ShareingFiles() {
-
-  }
+  async ShareingFiles() {}
 
   async UpgradeLink() {
-    if(this.state.CurrenRole.role === "preminum") {
+    if (this.state.CurrenRole.role === "preminum") {
       return <Link to="/profile/buyStorage"> Upgrade Account</Link>;
     } else {
       return <Link to="/profile/buyStorage"> Upgrade Account</Link>;
     }
-      return <Link to="/profile/buyStorage"> Upgrade Account</Link>;
+    return <Link to="/profile/buyStorage"> Upgrade Account</Link>;
   }
 
+  async downloadFiles(url: string, filename: any) {
+    axios
+      .get(url, {
+        responseType: "blob",
+      })
+      .then((res: any) => {
+        fileDownload(res.data, filename);
+      });
+  }
 
   render(): React.ReactNode {
     let LastFileCheck;
     let UserRole;
     let UserMaxGb;
-    if(this.state.LastUploads.length === 0) {
+    if (this.state.LastUploads.length === 0) {
       LastFileCheck = "";
     } else {
-      LastFileCheck = "Last Upload"
+      LastFileCheck = "Last Upload";
     }
-    if(typeof this.state.CurrenRole === "undefined") {
+    if (typeof this.state.CurrenRole === "undefined") {
       UserRole = "standart";
       UserMaxGb = "5000";
-    } else if(this.state.CurrenRole[1] === "gold") {
+    } else if (this.state.CurrenRole[1] === "gold") {
       UserRole = "gold";
       UserMaxGb = "50000";
-    } else if(this.state.CurrenRole[1] === "preminum") {
+    } else if (this.state.CurrenRole[1] === "preminum") {
       UserRole = "preminum";
       UserMaxGb = "1000000";
-    } 
-   return (
+    }
+    return (
       <>
         <div className="get-files-container">
-        <div className="row w-100" style={{margin: '0 auto'}}> 
-        <div className="col-md-3">
-            <h5>{this.state.totalFileSize} / {UserMaxGb} Mb</h5>
-            <h1>Role: {UserRole}</h1>
-            <button className="link-button"> 
-              <Link className="link" to="/profile/buyStorage"> Upgrade Account</Link>
-            </button>
-            <SendFiles />
+          <div className="row w-100" style={{ margin: "0 auto" }}>
+            <div className="col-md-3">
+              <h5>
+                {this.state.totalFileSize} / {UserMaxGb} Mb
+              </h5>
+              <h1>Role: {UserRole}</h1>
+              <button className="link-button">
+                <Link className="link" to="/profile/buyStorage">
+                  {" "}
+                  Upgrade Account
+                </Link>
+              </button>
+              <SendFiles />
+            </div>
+            <div className="col-md-9">
+              <Row>
+                <h2>{LastFileCheck}</h2>
+                {this.state.LastUploads.map((data: any) => (
+                  <div className="col-md-3 mb-4">
+                    <Card
+                      className="get-files-card"
+                      style={{ width: "10rem", height: "10rem" }}
+                    >
+                      <div style={{ width: "10rem", margin: "0 auto" }}>
+                        {data[0]}
+                      </div>
+                      <Card.Body>
+                        <Card.Title>{data[4].slice(0, 20)}</Card.Title>
+                        <Card.Text>{data[2]} Mb</Card.Text>
+                      </Card.Body>
+                    </Card>
+                  </div>
+                ))}
+              </Row>
+              <Table>
+                <thead className="color">
+                  <tr>
+                    <th>Name</th>
+                    <th></th>
+                    <th>FileSize</th>
+                  </tr>
+                </thead>
+                {this.state.UserFiles.map((data: any) => (
+                  <tbody className="color">
+                    <tr className="table-collum">
+                      <td>{data[0]}</td>
+                      <td>{data[4].slice(0, 20)}</td>
+                      <td>{data[2]}</td>
+                      <td>
+                        <MdOutlineContentCopy
+                          onClick={() => {
+                            navigator.clipboard.writeText(data[5]);
+                          }}
+                        />{" "}
+                      </td>
+                      <td>
+                        <MdOutlineDeleteOutline
+                          onClick={() => this.DeleteFiles(data[3]._hex)}
+                        />{" "}
+                      </td>
+                      <td>
+                        <MdOutlineDownload
+                          onClick={() => this.downloadFiles(data[5], data[4])}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                ))}
+              </Table>
+            </div>
+          </div>
         </div>
-        <div className="col-md-9">
-          <Row> 
-            <h2>{LastFileCheck}</h2>
-          {this.state.LastUploads.map((data: any) => (
-            <div className="col-md-3 mb-4"> 
-            <Card className="get-files-card" style={{ width: '10rem', height: "10rem" }}>
-                <div style={{width: '10rem', margin: "0 auto"}}> 
-                  {data[0]}
-                </div>
-              <Card.Body>
-                <Card.Title>{data[4].slice(0, 20)}</Card.Title>
-                  <Card.Text>
-                      {data[2]} Mb
-                  </Card.Text>
-             </Card.Body>
-           </Card>
-           </div>
-          ))}
-          </Row>
-          <Table>
-            <thead className="color">
-              <tr>
-                <th>Name</th>
-                <th></th>
-                <th>FileSize</th>
-              </tr>
-            </thead>
-            {this.state.UserFiles.map((data: any) => (
-              <tbody className="color">
-                <tr className="table-collum">
-                  <td>{data[0]}</td>
-                  <td>{data[4].slice(0, 20)}</td>
-                  <td>{data[2]}</td>
-                  <td><MdOutlineContentCopy onClick={() => {navigator.clipboard.writeText(data[5])}}/> </td>
-                  <td><MdOutlineDeleteOutline  onClick={() => this.DeleteFiles(data[3]._hex)}/> </td>
-                </tr>
-              </tbody>
-            ))}
-          </Table>
-        </div>
-        </div>
-        </div>
-        {this.state.loading ? (this.main) : (
-          <div style={{  width: "50px",
-            height: "50px",
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            margin: "-25px 0 0 -25px", }} >
-              
+        {this.state.loading ? (
+          this.main
+        ) : (
+          <div
+            style={{
+              width: "50px",
+              height: "50px",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              margin: "-25px 0 0 -25px",
+            }}
+          >
             <Spinner animation="border" role="status">
               <span className="visually-hidden">Loading...</span>
             </Spinner>

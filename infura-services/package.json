@@ -10,6 +10,7 @@
     "dev:build": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\""
   },
   "dependencies": {
+    "@types/morgan": "^1.9.3",
     "@types/multer": "^1.4.7",
     "body-parser": "^1.20.0",
     "compression": "^1.7.4",

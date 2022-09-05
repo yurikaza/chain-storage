@@ -1,17 +1,17 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import { Switch, Route } from "react-router-dom";
-import { Home } from "./Container/Home";
 import { Profile } from "./Container/Profile";
 import { BuyStorageClass } from "./Container/BuyStorage";
-import { MyNavbar } from './Components/Layout/Navbar'
+import { HomePage } from "./Container/HomePage";
+import { Navbar } from "./Container/components";
 
 class App extends Component {
   render() {
     return (
       <div>
-      <MyNavbar />
+        <Navbar />
         <Switch>
-          <Route exact path="/" component={Home} />
+          <Route exact path="/" component={HomePage} />
           <Route exact path="/profile/" component={Profile} />
           <Route exact path="/profile/buyStorage" component={BuyStorageClass} />
         </Switch>

@@ -168,35 +168,11 @@ export class SendFiles extends React.Component<{}, State> {
       }
 
       try {
-        axios
-          .post("http://localhost:4000/api/", formData)
-          .then(async (data: any) => {
-            const filesData = data.data.data;
-            console.log(filesData);
-            for (let index = 0; index < filesData.length; index++) {
-              const fileElement = filesData[index];
-
-              const provider = new ethers.providers.Web3Provider(
-                window.ethereum
-              );
-              const signer = provider.getSigner();
-              const contract = new ethers.Contract(
-                "0xd8EB6F8C4882Af90FEC4EBA485df8d66Be0DE970" ||
-                  `${process.env.CREATE_FILE_KEY}`,
-                SendFile.abi,
-                signer
-              );
-
-              const contractData = await contract.createFiles(
-                fileElement.name,
-                fileElement.link,
-                fileElement.size
-              );
-
-              await contractData.wait();
-              console.log("data: ", contractData);
-            }
-          });
+        if (myFiles.length < 2) {
+          this.callData("sendSingleFile", formData);
+        } else if (myFiles.length >= 2) {
+          this.callData("sendMultipleFile", formData);
+        }
 
         console.log(window.ethereum.selectedAddress);
       } catch (err: unknown) {
@@ -205,6 +181,36 @@ export class SendFiles extends React.Component<{}, State> {
     }
 
     this.setState({ loadingFile: "" });
+  }
+
+  callData(link: string, formData: any) {
+    axios
+      .post(`http://localhost:4000/${link}/`, formData)
+      .then(async (data: any) => {
+        const filesData = data.data.data;
+        console.log(filesData);
+        for (let index = 0; index < filesData.length; index++) {
+          const fileElement = filesData[index];
+
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(
+            "0xd8EB6F8C4882Af90FEC4EBA485df8d66Be0DE970" ||
+              `${process.env.CREATE_FILE_KEY}`,
+            SendFile.abi,
+            signer
+          );
+
+          const contractData = await contract.createFiles(
+            fileElement.name,
+            fileElement.link,
+            fileElement.size
+          );
+
+          await contractData.wait();
+          console.log("data: ", contractData);
+        }
+      });
   }
 
   render() {

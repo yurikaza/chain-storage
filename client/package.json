@@ -22,6 +22,7 @@
     "ethers": "^5.5.4",
     "express": "^4.17.2",
     "ipfs-http-client": "56.0.3",
+    "js-file-download": "^0.4.12",
     "parse-link-header": "^2.0.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.2",
